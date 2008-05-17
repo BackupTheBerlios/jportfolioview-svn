@@ -1,0 +1,9 @@
+Version 0.1.3 2008-05-16
+* transformed the code to the JavaFX compiler
+* fix the initial report to look at MUTUAL accounts to
+
+Version 0.1.2 2008-05-08
+* sell shares, profit/loss is calculated bases on FIFO
+* collect dividends
+* buy more shares (into existing accounts)
+* discard comboboxes in AssetFrame.fx, uses TreeSelector.fx instead to speed up the thing and avoid heap space overflows 
