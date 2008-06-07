@@ -1,6 +1,15 @@
+Version 0.1.4
+* some icons added
+* fixes for sell and divident transactions
+* option added to show/hide sold assets
+* fix for compressed output
+* implement TreeSelector for the GnuCash accounts instead of comboboxes
+* fixes for the standard datasource, it returns prices for derivates now
+* fixes to the datasource analyzer (still don't work as JavaFX has errors)
+
 Version 0.1.3 2008-05-16
 * transformed the code to the JavaFX compiler
-* fix the initial report to look at MUTUAL accounts to
+* fix the initial report to look at MUTUAL accounts too
 
 Version 0.1.2 2008-05-08
 * sell shares, profit/loss is calculated bases on FIFO

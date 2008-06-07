@@ -55,11 +55,14 @@ public class PriceDataSource extends AbstractDataSource {
 
     void readData() {
         try {
-            //@todo: this is broken, but i don't know why
-            //@todo: sometimes it returns price too?
+            //@todo: for Comdirect, the currency stands at different places :(
             //@todo: how to avoid prices in foreign currencies?
             String currencyID = getNodeValueStr(doc, pageParameterSet.currencyXPath, pageParameterSet.currencyPattern);
-
+            if (currencyID.trim().length()==0) {
+                currencyID = getNodeValueStr(doc, pageParameterSet.alternateCurrencyXPath, "");
+            }
+            
+            
             String priceStr = getNodeValueStr(doc, pageParameterSet.priceXPath, pageParameterSet.pricePattern);
             double value = pageParameterSet.decimalFormat.parse(priceStr).doubleValue();
 

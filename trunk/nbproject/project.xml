@@ -6,6 +6,7 @@
             <name>jPortfolioView</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
+                <root id="src.share.dir"/>
                 <root id="src.etc.dir"/>
                 <root id="src.dir"/>
             </source-roots>

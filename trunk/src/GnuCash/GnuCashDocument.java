@@ -71,24 +71,24 @@ public class GnuCashDocument {
 
         //dateTimeFormat=DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss Z");
         dateTimeFormat = GnuCashUtil.getGnuCashDateTimeFormatter();
-        
-        filename=newFileName;
+
+        filename = newFileName;
     }
 
     public void setFileName(String newFileName) {
         filename = newFileName;
         reset();
     }
-    
+
     public void reset() {
         book = null;
-        pricedb=null;
+        pricedb = null;
     }
-    
+
     public boolean isModified() {
         return modified;
     }
-    
+
     public void setBook() {
         Document d;
         InputSource inputSource;
@@ -106,20 +106,21 @@ public class GnuCashDocument {
 
                 book = (Element) d.selectSingleNode("/gnc-v2/gnc:book");
                 pricedb = (Element) book.selectSingleNode("gnc:pricedb");
-                
+
             } catch (FileNotFoundException ex1) {
                 Logger.getLogger(GnuCashDocument.class.getName()).log(Level.SEVERE, null, ex1);
             } catch (DocumentException ex) {
                 Logger.getLogger(GnuCashDocument.class.getName()).log(Level.SEVERE, null, ex);
-            } 
+            }
         }
-        
-        modified=false;
+
+        modified = false;
     }
 
     public void writeToXML(String filename) throws FileNotFoundException, UnsupportedEncodingException, IOException, DocumentException {
         String suffix = "";
         OutputStream out = null;
+
         OutputFormat outformat = OutputFormat.createPrettyPrint();
         outformat.setEncoding("UTF-8");
 
@@ -131,25 +132,21 @@ public class GnuCashDocument {
             suffix = ".copy";
         }
 
+        out = new FileOutputStream(filename.concat(suffix));
+
         //should we compress the file?
-        // @todo: fix this, the code breaks the file!!!
-        /*
-        if (Settings.getInstance().get("jPortfolioView","file","compressFile").equals("true") ) {
-        out = new FileOutputStream(filename.concat(suffix));
-        out.flush();
-        
-        out=new GZIPOutputStream(out);
-        out.flush();
-        } else {
-        out = new FileOutputStream(filename.concat(suffix));
+        if (Settings.getInstance().get("jPortfolioView", "file", "compressFile").equals("true")) {
+            out = new GZIPOutputStream(out);
         }
-         */
-        out = new FileOutputStream(filename.concat(suffix));
+
         XMLWriter writer = new XMLWriter(out, outformat);
         writer.write(book.getDocument());
         writer.flush();
-        
-        modified=false;
+
+        if (out instanceof GZIPOutputStream) {
+            ((GZIPOutputStream) out).finish();
+        }
+        modified = false;
     }
 
     // commodity has to be prior pricedb
@@ -171,8 +168,8 @@ public class GnuCashDocument {
         e.addElement("cmdty:quote_tz");
 
         book.elements("commodity").add(1, e);
-        
-        modified=true;
+
+        modified = true;
     /*
      *  <gnc:commodity version="2.0.0">
     <cmdty:space>XETRA</cmdty:space>
@@ -188,9 +185,9 @@ public class GnuCashDocument {
 
     public String addAccount(String parentID, String isin, String name, String commodityID, String space) {
         String accountID = UUID.randomUUID().toString().replace("-", "");
-        
+
         setBook();
-        
+
         Element e = book.addElement("gnc:account");
         e.addAttribute("version", ACC_VERSION);
 
@@ -219,7 +216,7 @@ public class GnuCashDocument {
         e1.addAttribute("type", "guid");
         e1.setText(parentID);
 
-        modified=true;
+        modified = true;
         /*
          * <gnc:account version="2.0.0">
         <act:name>Grenkeleasing AG</act:name>
@@ -247,7 +244,7 @@ public class GnuCashDocument {
         String transactionID = getUUID();
 
         setBook();
-        
+
         String dateposted = dateTimeFormat.print(valuta);
         String dateentered = dateTimeFormat.print(new DateTime());
 
@@ -294,7 +291,8 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(bankAccountID);
-
+        
+        if (fee.floatValue()!=0f) {
         e2 = e1.addElement("trn:split");
 
         e3 = e2.addElement("split:id");
@@ -307,7 +305,9 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(feeAccountID);
-
+        }
+        
+        if (courtage.floatValue()!=0f) {
         e2 = e1.addElement("trn:split");
 
         e3 = e2.addElement("split:id");
@@ -320,42 +320,9 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(feeAccountID);
-
-        /*
-         * <gnc:transaction version="2.0.0">
-        <trn:id type="guid">1127c17d9b8c4a75f4221d41174c22f3</trn:id>
-        <trn:currency>
-        <cmdty:space>ISO4217</cmdty:space>
-        <cmdty:id>EUR</cmdty:id>
-        </trn:currency>
-        <trn:date-posted>
-        <ts:date>2007-08-29 00:00:00 +0200</ts:date>
-        </trn:date-posted>
-        <trn:date-entered>
-        <ts:date>2007-09-09 11:40:03 +0200</ts:date>
-        </trn:date-entered>
-        <trn:description>Kauf Grenkeleasing AG</trn:description>
-        <trn:splits>
-        <trn:split>
-        <split:id type="guid">84a292b8b9dbfb7320035cc1474eef2e</split:id>
-        <split:action>Kauf</split:action>
-        <split:reconciled-state>n</split:reconciled-state>
-        <split:value>56890/100</split:value>
-        <split:quantity>200000/10000</split:quantity>
-        <split:account type="guid">29240bd513568d9300ae0adf3d0581eb</split:account>
-        </trn:split>
-        <trn:split>
-        <split:id type="guid">6cdf66a4d316f72e675e1563884fbf4d</split:id>
-        <split:reconciled-state>n</split:reconciled-state>
-        <split:value>-56890/100</split:value>
-        <split:quantity>-56890/100</split:quantity>
-        <split:account type="guid">06c3725806c918fac4a2e9ff468af42b</split:account>
-        </trn:split>
-         * 
-        </trn:splits>
-        </gnc:transaction>
-         */
-         modified=true;
+        }
+        
+        modified = true;
 
         return transactionID;
     }
@@ -365,7 +332,7 @@ public class GnuCashDocument {
         String transactionID = getUUID();
 
         setBook();
-        
+
         String dateposted = dateTimeFormat.print(valuta);
         String dateentered = dateTimeFormat.print(new DateTime());
 
@@ -432,6 +399,7 @@ public class GnuCashDocument {
 
 
         //------
+        if (fee.floatValue()!=0f) {
         e2 = e1.addElement("trn:split");
 
         e3 = e2.addElement("split:id");
@@ -444,8 +412,10 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(feeAccountID);
-
+        }
         //------
+        
+        if (courtage.floatValue()!=0f) {
         e2 = e1.addElement("trn:split");
 
         e3 = e2.addElement("split:id");
@@ -458,8 +428,10 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(feeAccountID);
-
+        }
+        
         //------
+        if (tax.floatValue()!=0f) {
         e2 = e1.addElement("trn:split");
 
         e3 = e2.addElement("split:id");
@@ -472,7 +444,8 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(taxAccountID);
-
+        }
+        
         //------
         e2 = e1.addElement("trn:split");
 
@@ -486,9 +459,9 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(incomeAccountID);
-        
-        modified=true;
-        
+
+        modified = true;
+
         return transactionID;
     }
 
@@ -497,7 +470,7 @@ public class GnuCashDocument {
         String transactionID = getUUID();
 
         setBook();
-        
+
         String dateposted = dateTimeFormat.print(valuta);
         String dateentered = dateTimeFormat.print(new DateTime());
 
@@ -518,6 +491,34 @@ public class GnuCashDocument {
         e.addElement("trn:date-entered").addElement("ts:date").setText(dateentered);
         e.addElement("trn:description").setText(description);
 
+        /*
+         * <gnc:transaction version="2.0.0">
+  <trn:id type="guid">5db7b9fdc1769befe14b2bcea0329bc4</trn:id>
+  <trn:currency>
+    <cmdty:space>ISO4217</cmdty:space>
+    <cmdty:id>EUR</cmdty:id>
+  </trn:currency>
+  <trn:date-posted>
+    <ts:date>2006-05-15 00:00:00 +0200</ts:date>
+  </trn:date-posted>
+  <trn:date-entered>
+    <ts:date>2006-07-07 18:02:46 +0200</ts:date>
+  </trn:date-entered>
+  <trn:description>Dividende Alliant Energy</trn:description>
+  <trn:splits>
+    <trn:split>
+      <split:id type="guid">1808a5aa727d6ba81fe58540e8e3f63b</split:id>
+      <split:action>Kauf</split:action>
+      <split:reconciled-state>n</split:reconciled-state>
+      <split:value>0/100</split:value>
+      <split:quantity>10000/10000</split:quantity>
+      <split:account type="guid">a60e298bbea14755e21d732362104b69</split:account>
+    </trn:split>
+  </trn:splits>
+</gnc:transaction>
+         */ 
+        
+        
         e1 = e.addElement("trn:splits");
 
         Element e2 = e1.addElement("trn:split");
@@ -533,22 +534,68 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(accountID);
-
+        
+        /* obsolete
         e2 = e1.addElement("trn:split");
 
         e3 = e2.addElement("split:id");
         e3.addAttribute("type", "guid");
         e3.setText(getUUID());
         e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, -1 * 0d));
+        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, 0d));
         e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, -1 * 0d));
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(bankAccountID);
-
+        */
 
 
         // Sale of the share
+        
+        /*
+         * <gnc:transaction version="2.0.0">
+  <trn:id type="guid">f8b256f02ff8a92237fe09552e3b56dc</trn:id>
+  <trn:currency>
+    <cmdty:space>ISO4217</cmdty:space>
+    <cmdty:id>EUR</cmdty:id>
+  </trn:currency>
+  <trn:date-posted>
+    <ts:date>2006-05-15 00:00:00 +0200</ts:date>
+  </trn:date-posted>
+  <trn:date-entered>
+    <ts:date>2006-07-07 18:09:52 +0200</ts:date>
+  </trn:date-entered>
+  <trn:description>Dividende Alliant Energy</trn:description>
+  <trn:splits>
+    <trn:split>
+      <split:id type="guid">913e28309a0d50439afe78fbbac97d3d</split:id>
+      <split:action>Verkauf</split:action>
+      <split:reconciled-state>n</split:reconciled-state>
+      <split:value>0/100</split:value>
+      <split:quantity>-10000/10000</split:quantity>
+      <split:account type="guid">a60e298bbea14755e21d732362104b69</split:account>
+    </trn:split>
+    <trn:split>
+      <split:id type="guid">c060929f5707741c7836ec180b3ea972</split:id>
+      <split:action>Dividende</split:action>
+      <split:reconciled-state>n</split:reconciled-state>
+      <split:value>611/100</split:value>
+      <split:quantity>611/100</split:quantity>
+      <split:account type="guid">06c3725806c918fac4a2e9ff468af42b</split:account>
+    </trn:split>
+    <trn:split>
+      <split:id type="guid">78ac9704d09834cd81e353796d0979e7</split:id>
+      <split:action>Dividende</split:action>
+      <split:reconciled-state>n</split:reconciled-state>
+      <split:value>-611/100</split:value>
+      <split:quantity>-611/100</split:quantity>
+      <split:account type="guid">b47af96d62b6e6f45f8e30a051b8cc21</split:account>
+    </trn:split>
+  </trn:splits>
+</gnc:transaction>
+*/
+        
+        
         e = book.addElement("gnc:transaction");
         e.addAttribute("version", TRN_VERSION);
 
@@ -576,8 +623,8 @@ public class GnuCashDocument {
 
         e2.addElement("split:action").setText("Sale");
         e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, -1 * value.doubleValue()));
-        e2.addElement("split:quantity").setText(getNumberStr(1d));
+        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, 0 ));
+        e2.addElement("split:quantity").setText(getNumberStr(-1d));
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(accountID);
@@ -591,67 +638,59 @@ public class GnuCashDocument {
 
         e2.addElement("split:action").setText("Income");
         e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, income));
-        e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, 0d));
-        e3 = e2.addElement("split:account");
-        e3.addAttribute("type", "guid");
-        e3.setText(accountID);
-
-        //------
-        e2 = e1.addElement("trn:split");
-
-        e3 = e2.addElement("split:id");
-        e3.addAttribute("type", "guid");
-        e3.setText(getUUID());
-        e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, amount.floatValue()));
-        e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, amount.floatValue()));
+        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, amount));
+        e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, amount));
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(bankAccountID);
 
+        //------
+        if (fee.floatValue() != 0f) {
+            e2 = e1.addElement("trn:split");
+
+            e3 = e2.addElement("split:id");
+            e3.addAttribute("type", "guid");
+            e3.setText(getUUID());
+            e2.addElement("split:action").setText("Fee");
+            e2.addElement("split:reconciled-state").setText("n");
+            e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, fee.floatValue()));
+            e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, fee.floatValue()));
+            e3 = e2.addElement("split:account");
+            e3.addAttribute("type", "guid");
+            e3.setText(feeAccountID);
+        }
 
         //------
-        e2 = e1.addElement("trn:split");
+        if (courtage.floatValue() != 0f) {
+            e2 = e1.addElement("trn:split");
 
-        e3 = e2.addElement("split:id");
-        e3.addAttribute("type", "guid");
-        e3.setText(getUUID());
-        e2.addElement("split:action").setText("Fee");
-        e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, fee.floatValue()));
-        e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, fee.floatValue()));
-        e3 = e2.addElement("split:account");
-        e3.addAttribute("type", "guid");
-        e3.setText(feeAccountID);
-
-        //------
-        e2 = e1.addElement("trn:split");
-
-        e3 = e2.addElement("split:id");
-        e3.addAttribute("type", "guid");
-        e3.setText(getUUID());
-        e2.addElement("split:action").setText("Courtage");
-        e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, courtage.floatValue()));
-        e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, courtage.floatValue()));
-        e3 = e2.addElement("split:account");
-        e3.addAttribute("type", "guid");
-        e3.setText(feeAccountID);
+            e3 = e2.addElement("split:id");
+            e3.addAttribute("type", "guid");
+            e3.setText(getUUID());
+            e2.addElement("split:action").setText("Courtage");
+            e2.addElement("split:reconciled-state").setText("n");
+            e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, courtage.floatValue()));
+            e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, courtage.floatValue()));
+            e3 = e2.addElement("split:account");
+            e3.addAttribute("type", "guid");
+            e3.setText(feeAccountID);
+        }
 
         //------
-        e2 = e1.addElement("trn:split");
+        if (tax.floatValue() != 0f) {
+            e2 = e1.addElement("trn:split");
 
-        e3 = e2.addElement("split:id");
-        e3.addAttribute("type", "guid");
-        e3.setText(getUUID());
-        e2.addElement("split:action").setText("Tax");
-        e2.addElement("split:reconciled-state").setText("n");
-        e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, tax));
-        e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, tax));
-        e3 = e2.addElement("split:account");
-        e3.addAttribute("type", "guid");
-        e3.setText(taxAccountID);
+            e3 = e2.addElement("split:id");
+            e3.addAttribute("type", "guid");
+            e3.setText(getUUID());
+            e2.addElement("split:action").setText("Tax");
+            e2.addElement("split:reconciled-state").setText("n");
+            e2.addElement("split:value").setText(getNumberStr(currency, CURR_SPACE, tax));
+            e2.addElement("split:quantity").setText(getNumberStr(currency, CURR_SPACE, tax));
+            e3 = e2.addElement("split:account");
+            e3.addAttribute("type", "guid");
+            e3.setText(taxAccountID);
+        }
 
         //------
         e2 = e1.addElement("trn:split");
@@ -666,17 +705,86 @@ public class GnuCashDocument {
         e3 = e2.addElement("split:account");
         e3.addAttribute("type", "guid");
         e3.setText(incomeAccountID);
-        
-        modified=true;
-        
+
+        modified = true;
+
+        /*
+        <gnc:transaction version="2.0.0"> 
+        <trn:id type="guid">68c75feaa06e478a540f4b9d3e01ca40</trn:id>  
+        <trn:currency> 
+        <cmdty:space>ISO4217</cmdty:space>  
+        <cmdty:id>EUR</cmdty:id> 
+        </trn:currency>  
+        <trn:date-posted> 
+        <ts:date>2005-11-21 00:00:00 +0100</ts:date> 
+        </trn:date-posted>  
+        <trn:date-entered> 
+        <ts:date>2005-11-21 18:46:31 +0100</ts:date> 
+        </trn:date-entered>  
+        <trn:description>Zinsen DEKA Convergence Renten</trn:description>  
+        <trn:splits> 
+        <trn:split> 
+        <split:id type="guid">2b30b8851a1321058ae6346a0f56fd92</split:id>  
+        <split:reconciled-state>n</split:reconciled-state>  
+        <split:value>22320/100</split:value>  
+        <split:quantity>22320/100</split:quantity>  
+        <split:account type="guid">06c3725806c918fac4a2e9ff468af42b</split:account> 
+        </trn:split>  
+        <trn:split> 
+        <split:id type="guid">958cf0eb3b6b66502b398dc272c7870e</split:id>  
+        <split:action>Kauf</split:action>  
+        <split:reconciled-state>n</split:reconciled-state>  
+        <split:value>-22320/100</split:value>  
+        <split:quantity>-10000/10000</split:quantity>  
+        <split:account type="guid">d4db45a31352d597564635dafc11bb2b</split:account> 
+        </trn:split> 
+        </trn:splits> 
+        </gnc:transaction>
+         * 
+         *  
+         */
+
+        /*
+        <gnc:transaction version="2.0.0"> 
+        <trn:id type="guid">f240993e6d6a6bf968b1ae72608e0090</trn:id>  
+        <trn:currency> 
+        <cmdty:space>ISO4217</cmdty:space>  
+        <cmdty:id>EUR</cmdty:id> 
+        </trn:currency>  
+        <trn:date-posted> 
+        <ts:date>2005-11-25 00:00:00 +0100</ts:date> 
+        </trn:date-posted>  
+        <trn:date-entered> 
+        <ts:date>2005-11-26 09:37:23 +0100</ts:date> 
+        </trn:date-entered>  
+        <trn:description>Zinsen</trn:description>  
+        <trn:splits> 
+        <trn:split> 
+        <split:id type="guid">9ca1a16bc4af1f68b2a9caf918a289ee</split:id>  
+        <split:reconciled-state>n</split:reconciled-state>  
+        <split:value>5550/100</split:value>  
+        <split:quantity>5550/100</split:quantity>  
+        <split:account type="guid">06c3725806c918fac4a2e9ff468af42b</split:account> 
+        </trn:split>  
+        <trn:split> 
+        <split:id type="guid">ef710a698ea7fed24fc6387190619d12</split:id>  
+        <split:action>Verkauf</split:action>  
+        <split:reconciled-state>n</split:reconciled-state>  
+        <split:value>-5550/100</split:value>  
+        <split:quantity>-10000/10000</split:quantity>  
+        <split:account type="guid">92fc13d90ee305e5fc2ad3bd913b7069</split:account> 
+        </trn:split> 
+        </trn:splits> 
+        </gnc:transaction>
+         */
         return transactionID;
     }
 
     public String addPrice(String currencyID, String commodityID, float price, DateTime valuta) {
         String priceID = getUUID();
-        
+
         setBook();
-        
+
         Element e = pricedb.addElement("price");
 
         Element e1 = e.addElement("price:id");
@@ -717,16 +825,16 @@ public class GnuCashDocument {
         <price:value>223900000/10000000000</price:value>
         </price>
          */
-         modified=true;
-         
+        modified = true;
+
         return priceID;
     }
 
     public String addPrice(Price p) {
         String priceID = getUUID();
-        
+
         setBook();
-        
+
         Element e = pricedb.addElement("price");
 
         Element e1 = e.addElement("price:id");
@@ -747,9 +855,9 @@ public class GnuCashDocument {
         e.addElement("price:source").setText(PRC_SOURCE);
         e.addElement("price:type").setText("last");
         e.addElement("price:value").setText(getNumberStr(p.value, 5));
-        
-        modified=true;
-        
+
+        modified = true;
+
         return priceID;
     }
 

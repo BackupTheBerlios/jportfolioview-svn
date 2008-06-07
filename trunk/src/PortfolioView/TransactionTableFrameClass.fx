@@ -26,7 +26,7 @@ import GnuCash.*;
 import java.lang.Object;
 import java.lang.System;
 
-class TransactionTableFrameClass extends Frame {
+class TransactionTableFrameClass extends Dialog {
     attribute SelectModel:TableSelectModelClass;
     attribute selectedsymbol:String
         = bind SelectModel.SelectedTableCell.text
@@ -60,8 +60,7 @@ class TransactionTableFrameClass extends Frame {
                         //foreground: if (a.getIncome()<0) then fgColor1 else fgColor2
                     }
                     ];
-        this.pack();
-        this.visible=true;
+                    show();
     }    
     
     override attribute title= bind SelectModel.SelectedTableCell.text;
@@ -69,6 +68,9 @@ class TransactionTableFrameClass extends Frame {
     attribute gnucashDocument:GnuCashDocument;
     attribute account:StockAccount=bind gnucashutil.getAccount(selectedsymbol);
     attribute cells:TableCell[];
+    
+    override attribute visible=false;
+    //override attribute modal=true;
     
     postinit {
         
@@ -81,7 +83,7 @@ class TransactionTableFrameClass extends Frame {
                 [Button{
                     text: "close Frame"
                     action: function() {
-                        this.close();
+                        this.hide();
                     }
                 }
                 , Button{
@@ -94,8 +96,8 @@ class TransactionTableFrameClass extends Frame {
                             gnucashDocument: bind gnucashDocument
                             account: bind account
                         };
-                        assetFrame.pack();
-                        assetFrame.readSettings();
+                        assetFrame.showDialog(this);
+                        assetFrame=null;
                     }
                 }
                 , Button{
@@ -108,8 +110,8 @@ class TransactionTableFrameClass extends Frame {
                             gnucashDocument: bind gnucashDocument
                             account: bind account
                         };
-                        assetFrame.pack();
-                        assetFrame.readSettings();
+                        assetFrame.showDialog(this);
+                        assetFrame=null;
                     }
                 }
                 
@@ -123,8 +125,8 @@ class TransactionTableFrameClass extends Frame {
                             gnucashDocument: bind gnucashDocument
                             account: bind account
                         };
-                        assetFrame.pack();
-                        assetFrame.readSettings();
+                        assetFrame.showDialog(this);
+                        assetFrame=null;
                     }
                 }
                 ]

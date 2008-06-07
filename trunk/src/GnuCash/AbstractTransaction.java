@@ -45,7 +45,7 @@ public abstract class AbstractTransaction {
     }
     
     public String getValueStr() {
-        return DecimalFormat.getNumberInstance().format(value);
+        return Formatter.formatPrice(value);
     }
     
     public Date getDate() {
@@ -53,7 +53,7 @@ public abstract class AbstractTransaction {
     }
     
     public String getDateStr() {
-        return SimpleDateFormat.getDateTimeInstance().format(date);
+        return Formatter.formatDate(date);
     }
     
     static double getDoubleValue(String s) {
@@ -78,9 +78,5 @@ public abstract class AbstractTransaction {
             System.out.println(e.getMessage());
         }
         return d;
-    }
-
-    static String formatDate(Date d) {
-        return SimpleDateFormat.getDateInstance().format(d);
     }
 }

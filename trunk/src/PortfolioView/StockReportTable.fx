@@ -23,6 +23,10 @@ class StockReportTable extends Table {
     static attribute fgColor1=Color { red: 1, green: 0, blue: 0 };
     
     attribute tableSelectModel:TableSelectModelClass;
+    //attribute selectedTableCell=bind tableSelectModel.SelectedTableCell on replace {
+    //    System.out.println("in Table cell selected: {selectedTableCell.text}");
+    //}
+    attribute selectedSymbol:String=bind tableSelectModel.SelectedTableCell.text;
     
     // this bug is nasty!!!
     // @todo: remove this, as soon the bug is fixed
@@ -47,6 +51,11 @@ class StockReportTable extends Table {
     }
     , TableColumn {
         text: "Shares"
+        width: 60
+        alignment: HorizontalAlignment.TRAILING
+    }
+    , TableColumn {
+        text: "Einstand"
         width: 60
         alignment: HorizontalAlignment.TRAILING
     }
@@ -86,6 +95,11 @@ class StockReportTable extends Table {
     }
     , TableCell {
         text:  a.getStockBalanceStr()
+        background: if (indexof a % 2 == 1) then bgColor1 else bgColor2
+        foreground: if (a.getIncome()<0) then fgColor1 else fgColor2
+    }
+    , TableCell {
+        text: a.getAveragePriceStr()
         background: if (indexof a % 2 == 1) then bgColor1 else bgColor2
         foreground: if (a.getIncome()<0) then fgColor1 else fgColor2
     }

@@ -47,6 +47,7 @@ class TreeSelector extends GroupPanel {
         TextField {
             row: rows[0]
             column: columns[0]
+            columns: 15
             value: bind text
             editable: false
             selectOnFocus: true
@@ -62,7 +63,13 @@ class TreeSelector extends GroupPanel {
             text: ""
             toolTipText: "show tree of possible values"
             action: function():Void {
-                System.out.println("comming soon");
+                var treeSelectorDialog=TreeSelectorDialog {
+                    gnucashUtil:gnucashUtil
+                    selectedAccountID: bind value with inverse
+                };
+                treeSelectorDialog.showDialog(this);
+                //value=treeSelectorFrame.getSelectedAccountID();
+                //treeSelectorFrame.dispose();
             }
         }
         ];

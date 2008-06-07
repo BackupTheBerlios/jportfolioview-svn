@@ -20,6 +20,8 @@ package GnuCash;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +29,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -55,7 +58,10 @@ public class GnuCashUtil extends XMLReaderAdapter {
     final static int ADD_SPLIT = 41;
     final static int ADD_TRANSACTION_DATE_POSTED = 42;
     final static String GnuCashDateTimePattern = "yyyy-MM-dd HH:mm:ss Z";
+    
     final static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(GnuCashDateTimePattern);
+    
+    
     private int mode;
     private String text;
     Document d;
@@ -63,7 +69,13 @@ public class GnuCashUtil extends XMLReaderAdapter {
     String r;
     HashMap<String, StockAccount> accountHashMapByID;
     HashMap<String, StockAccount> accountHashMapBySymbol;
-    HashMap<String, GnuCashAccount> gnucashAccountHashMap;
+    
+    // be carefull: that code works only, if the accounts are provied in theb right order (all parents before their childs)
+    // GnuCash seems to providev that order and fails itself when this order is changed
+    // we have to use a 'LinkedHashMap' to maintain this order for the accounts, see GnuCashUtil
+    LinkedHashMap<String, GnuCashAccount> gnucashAccountHashMap;
+    
+    
     HashMap<String, Commodity> commodityHashMap;
     HashMap<String, Vector> priceHashMap;
     Vector<Price> priceVector;
@@ -94,7 +106,7 @@ public class GnuCashUtil extends XMLReaderAdapter {
         text = "";
         accountHashMapByID = new HashMap();
         accountHashMapBySymbol = new HashMap();
-        gnucashAccountHashMap = new HashMap();
+        gnucashAccountHashMap = new LinkedHashMap();
         commodityHashMap = new HashMap();
         priceHashMap = new HashMap();
         priceVector = new Vector();
@@ -289,7 +301,12 @@ public class GnuCashUtil extends XMLReaderAdapter {
                         String accountType = gnucashAccountHashMap.get(s1.account_id).type;
 
                         if (accountType.equals("STOCK") || accountType.equals("MUTUAL")) {
-                            accountHashMapByID.get(s.account_id).transactions.add(s1);
+                            
+                            // filter dividends or interest
+                            //if (s1.value!=0) {
+                                accountHashMapByID.get(s.account_id).transactions.add(s1);
+                            //}
+                            
                         } else if (accountType.equals("EXPENSE") || accountType.equals("INCOME")) {
                             s1.quantity = 0d;
                             accountHashMapByID.get(s.account_id).transactions.add(s1);
@@ -301,14 +318,20 @@ public class GnuCashUtil extends XMLReaderAdapter {
 
 
         }
-
+        
+        
+        boolean showSoldAccounts=datasource.Settings.getInstance()
+                                    .get("jPortfolioView", "report","showSoldShares")
+                                    .equals("true");
+        
         // sort the transactions of an account by date ascending
         //@todo: replace this with a treemap, that sorts automatically
         // transform to symbol based hashmap, delete accounts without transactions
         Iterator<StockAccount> accIterator = accountHashMapByID.values().iterator();
         while (accIterator.hasNext()) {
             StockAccount account = accIterator.next();
-            if (account.getTransactionVector().size() > 0) {
+            if ( account.getTransactionVector().size() > 0 
+                    && (account.getCurrentStockBalance()!=0d || showSoldAccounts) ) {
                 accountHashMapBySymbol.put(account.symbol, account);
             }
         }
@@ -343,7 +366,10 @@ public class GnuCashUtil extends XMLReaderAdapter {
     }
 
     public StockAccount[] getStockAccountArr() {
-        return accountHashMapBySymbol.values().toArray(new StockAccount[0]);
+        StockAccount[] acc = accountHashMapBySymbol.values().toArray(new StockAccount[0]);
+        Arrays.sort(acc, new StockAccountComparator());
+        
+        return acc;
     }
 
     public Collection<Commodity> getCommodities() {
@@ -360,6 +386,19 @@ public class GnuCashUtil extends XMLReaderAdapter {
         String s = space.concat("::").concat(id).concat("::").concat(isin);
         return commodityHashMap.containsKey(s);
     }
+    
+    public String getIsinFromSymbol(String symbol) {
+        String isin="";
+        
+        if (commodityHashMap.containsKey(symbol)) {
+            isin=commodityHashMap.get(symbol).xcode;
+            System.out.println("isin found: " + isin);
+        } else {
+            System.out.println("symbol not found: " + symbol);
+        }
+            
+        return isin;
+    }
 
     public StockAccount getAccount(String symbol) {
         return accountHashMapBySymbol.get(symbol);
@@ -368,6 +407,7 @@ public class GnuCashUtil extends XMLReaderAdapter {
 
     //@todo: filter account because comboboxes can't hold too many values
     //@todo: remove this, when tree-widget is used instead of comboboxes
+    /*
     public GnuCashAccount[] getGnuCashAccountArr() {
         Vector<GnuCashAccount> relevantAccounts = new Vector();
          Iterator<GnuCashAccount> accIterator = gnucashAccountHashMap.values().iterator();
@@ -382,6 +422,7 @@ public class GnuCashUtil extends XMLReaderAdapter {
         Arrays.sort(acc, new GnuCashAccountComparator());
         return acc;
     }
+     */ 
 
     public Collection<GnuCashAccount> getGnuCashAccounts() {
         return gnucashAccountHashMap.values();
@@ -398,6 +439,7 @@ public class GnuCashUtil extends XMLReaderAdapter {
     public static DateTimeFormatter getGnuCashDateTimeFormatter() {
         return dateTimeFormatter;
     }
+    
 
     public static DateTime getGnuCashDateTime(String s) {
         return dateTimeFormatter.parseDateTime(s);
@@ -410,6 +452,13 @@ public class GnuCashUtil extends XMLReaderAdapter {
     private class GnuCashAccountComparator implements Comparator<GnuCashAccount> {
 
         public int compare(GnuCashAccount acc1, GnuCashAccount acc2) {
+            return acc1.name.compareToIgnoreCase(acc2.name);
+        }
+    }
+    
+    private class StockAccountComparator implements Comparator<StockAccount> {
+
+        public int compare(StockAccount acc1, StockAccount acc2) {
             return acc1.name.compareToIgnoreCase(acc2.name);
         }
     }

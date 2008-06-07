@@ -86,7 +86,7 @@ public class StockAccount {
     }
 
     public String getQuantityStr() {
-        return DecimalFormat.getNumberInstance().format(value);
+        return Formatter.formatShare(value);
     }
 
     //----------- Transactions
@@ -103,19 +103,19 @@ public class StockAccount {
     }
 
     public String getFirstTransactionDateStr() {
-        return SimpleDateFormat.getDateInstance().format(transactions.firstElement().getDate());
+        return Formatter.formatDate(transactions.firstElement().getDate());
     }
 
     public String getLastTransactionDateStr() {
-        return SimpleDateFormat.getDateInstance().format(transactions.lastElement().getDate());
+        return Formatter.formatDate(transactions.lastElement().getDate());
     }
 
     public String getFirstTransactionValueStr() {
-        return DecimalFormat.getNumberInstance().format(transactions.firstElement().getValue());
+        return Formatter.formatPrice(transactions.firstElement().getValue());
     }
 
     public String getLastTransactionValueStr() {
-        return DecimalFormat.getNumberInstance().format(transactions.lastElement().getValue());
+        return Formatter.formatPrice(transactions.lastElement().getValue());
     }
 
     public Transaction getLastTransaction() {
@@ -128,17 +128,17 @@ public class StockAccount {
     }
 
     public String getFirstPriceDateStr() {
-        return SimpleDateFormat.getDateInstance().format(prices.firstElement().getDate());
+        return Formatter.formatDate(prices.firstElement().getDate());
     }
 
     public String getLastPriceDateStr() {
-        return SimpleDateFormat.getDateInstance().format(prices.lastElement().getDate());
+        return Formatter.formatDate(prices.lastElement().getDate());
     }
 
     public String getFirstPriceValueStr() {
         String s = "";
         if (prices.size() > 0) {
-            s = DecimalFormat.getNumberInstance().format(prices.firstElement().getValue());
+            s = Formatter.formatPrice(prices.firstElement().getValue());
         }
         return s;
     }
@@ -146,7 +146,7 @@ public class StockAccount {
     public String getLastPriceValueStr() {
         String s = "";
         if (prices.size() > 0) {
-            s = DecimalFormat.getNumberInstance().format(prices.lastElement().getValue());
+            s = Formatter.formatPrice(prices.lastElement().getValue());
         }
         return s;
     }
@@ -166,7 +166,15 @@ public class StockAccount {
         }
         return p;
     }
-
+    
+    public double getCurrentStockBalance() {
+        double stockBalance = 0d;
+        for (int i = 0; i < transactions.size(); i++) {
+            stockBalance += transactions.get(i).quantity;
+        }
+        return stockBalance;
+    }
+    
     public void calculate() {
         stockBalance = 0d;
         for (int i = 0; i < transactions.size(); i++) {
@@ -203,17 +211,17 @@ public class StockAccount {
             trsCopy.add(trs);
 
 
-            if (trs.quantity > 0) {
+            if (trs.quantity > 0 && trs.value!=0d) {
                 trs.value /= trs.quantity;
             }
 
-            if (trs.quantity < 0) {
+            if (trs.quantity < 0 && trs.value!=0d) {
                 sellBalance += trs.quantity;
             }
         }
 
         // reduce every transaction by the sold transactions
-        // then we have a vector with still holded shares and there prices
+        // then we have a vector with still held shares and there prices
         for (int i = 0; i < trsCopy.size() && sellBalance < 0; i++) {
             Transaction trs = trsCopy.get(i);
 
@@ -240,8 +248,6 @@ public class StockAccount {
             if (trs.quantity > 0) {
                 x += trs.value * trs.quantity;
                 y += trs.quantity;
-
-                System.out.println(trs.quantity + " " + trs.value);
                 stockBalance += trs.quantity;
             }
         }
@@ -252,9 +258,11 @@ public class StockAccount {
         } else {
             result = -1;
         }
-        System.out.println(result);
-        System.out.println("-------------------");
         return result;
+    }
+    
+    public String getAveragePriceStr() {
+        return Formatter.formatPrice( getAveragePrice(stockBalance) );
     }
     
     public String getID() {
@@ -267,7 +275,7 @@ public class StockAccount {
     
     //@todo: fix this please
     public String getISIN() {
-        return "unkown";
+        return code;
     }
     
     
@@ -276,15 +284,15 @@ public class StockAccount {
     }
 
     public String getStockBalanceStr() {
-        return DecimalFormat.getNumberInstance().format(stockBalance);
+        return Formatter.formatShare(stockBalance);
     }
 
     public String getCashBalanceStr() {
-        return DecimalFormat.getNumberInstance().format(cashBalance);
+        return Formatter.formatPrice(cashBalance);
     }
 
     public String getIncomeStr() {
-        return DecimalFormat.getNumberInstance().format(income);
+        return Formatter.formatPrice(income);
     }
 
     public double getIncome() {

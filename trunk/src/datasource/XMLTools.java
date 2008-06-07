@@ -18,8 +18,6 @@
 
 package datasource;
 
-import java.util.Vector;
-import java.util.List;
 
 import java.io.FileOutputStream;
 
@@ -32,7 +30,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import java.util.regex.*;
 
 public class XMLTools {
     public static long writeToXML(Document doc, String Filename) {
@@ -101,5 +98,10 @@ public class XMLTools {
 	String s=System.getProperty("file.separator");
 	if (p.lastIndexOf(s) < p.length()) p+=s;
 	return p;
+    }
+    
+    public static String getResourceUrlStr(String resourceName) {
+        String urlStr=System.out.getClass().getResource(resourceName).toExternalForm();
+        return urlStr;
     }
 }

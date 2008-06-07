@@ -24,7 +24,7 @@ package GnuCash;
  */
 public class GnuCashAccount {
     String id;
-    String parentID;
+    String parentID="";
     String name;
     String type;
     
@@ -34,7 +34,23 @@ public class GnuCashAccount {
         return name + ":" + type;
     }
     
+    public String toString() {
+        return name + ":" + type;
+    }
+    
     public String getID() {
         return id;
+    }
+    
+    public String getType() {
+      return type;
+    }
+    
+    public String getParentID() {
+        return parentID;
+    }
+    
+    public String getCommodityID() {
+        return commodityID;
     }
 }

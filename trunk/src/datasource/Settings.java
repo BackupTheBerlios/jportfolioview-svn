@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.dom4j.*;
 import java.io.File;
+import java.util.Properties;
 
 public class Settings {
 
@@ -177,9 +178,28 @@ public class Settings {
         filename = get("jPortfolioView", "file", "datasource");
         if (filename.length() > 0 && (new File(filename).exists() )) {
             doc = XMLTools.readXML(filename);
+            
         } else {
             doc = XMLTools.readXMLResource("/datasources.xml");
         }
         return doc;
+    }
+    
+    public static void setProxy() {
+        //set proxy if available
+        String proxyIP=getInstance().get("jPortfolioView","network","proxyIP");
+        String proxyPort=getInstance().get("jPortfolioView","network","proxyPort");
+        
+        if (proxyIP.length()>0) {
+            // Modify system properties
+            Properties sysProperties = System.getProperties();
+
+            // Specify proxy settings
+            sysProperties.put("proxyHost", proxyIP);
+            sysProperties.put("proxyPort", proxyPort);
+            sysProperties.put("proxySet",  "true");
+        } else {
+            System.getProperties().put("proxySet",  "false");
+        }
     }
 }

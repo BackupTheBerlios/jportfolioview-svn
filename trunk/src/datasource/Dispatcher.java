@@ -95,6 +95,7 @@ public class Dispatcher extends Thread {
             pageParameterSet.valutaPattern = n.selectSingleNode("trigger[@name='valuta']/@regex").getText();
             
             pageParameterSet.currencyXPath = n.selectSingleNode("trigger[@name='currency']/@xpath").getText();
+            pageParameterSet.alternateCurrencyXPath = n.selectSingleNode("trigger[@name='currencyA']/@xpath").getText();
             pageParameterSet.currencyPattern = n.selectSingleNode("trigger[@name='currency']/@regex").getText();
 
             while (commodityIterator.hasNext()) {

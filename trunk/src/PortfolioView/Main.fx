@@ -39,11 +39,6 @@ import java.util.Date;
 //UIManager.setLookAndFeel(new GTKLookAndFeel());
 
 
-var s:String="2007-07-11 12:00:00 -0700";
-var d:Date=GnuCashUtil.getGnuCashDate(s);
-System.out.println(d);
-
-
 //try to read set filename
 var filename:String=Settings.getInstance().get("jPortfolioView","file","filename");
 
@@ -67,6 +62,7 @@ fileChooser.showOpenDialog(null);
 
 var gcu:GnuCashUtil=new GnuCashUtil(filename);
 var gnucashDocument=new GnuCashDocument(filename);
+var selectedSymbol:String="";
 
 System.out.println("looks good!");
 
@@ -79,8 +75,9 @@ var transactiontableframe=TransactionTableFrameClass {
     SelectModel:tableselectmodel
     gnucashutil: bind gcu
     gnucashDocument: bind gnucashDocument
-    visible: true;
+    visible:false;
 };
+transactiontableframe.hide();
 
 var statusbar=GridPanel{
     rows: 1
@@ -94,8 +91,19 @@ var statusbar=GridPanel{
 
 var toolbar=ToolBar {
     buttons: [
-    
     Button {
+        text: "quit Program"
+        toolTipText: "Quit the Program."
+        action: function() {
+            gcu=null;
+            gnucashDocument=null;
+            transactiontableframe=null;
+            System.exit(0);
+        }
+        icon: Image { url: XMLTools.getResourceUrlStr("/icons/exit.png") }
+        
+    }
+    , Button {
         text: "save Changes"
         toolTipText: "Save any changes into GnuCash file."
         action: function() {
@@ -105,7 +113,20 @@ var toolbar=ToolBar {
             
             gcu=new GnuCashUtil(filename);
         }
-}
+        icon: Image { url: XMLTools.getResourceUrlStr("/icons/save.png") }
+    }
+    
+    , Button {
+        text: "view Chart"
+        toolTipText: "View the Chart from online datasource."
+        action: function() {
+            var chartFrame=ChartFrame {
+                symbol: tableselectmodel.SelectedTableCell.text
+                visible: true
+            };
+        }
+        icon: Image { url: XMLTools.getResourceUrlStr("/icons/go-next.png") }
+    }
 , Button {
     text: "add Asset"
     toolTipText: "add an Asset into the Gnucash file."
@@ -114,11 +135,11 @@ var toolbar=ToolBar {
             title: "add an Asset"
             gnucashUtil: gcu
             gnucashDocument: gnucashDocument
-            visible: true;
         };
-        assetFrame.pack();
-        assetFrame.readSettings();
+        assetFrame.show();
+        assetFrame=null;
     }
+    icon: Image { url: XMLTools.getResourceUrlStr("/icons/add.png") }
 }
 , Button {
     text: "update Prices"
@@ -137,19 +158,20 @@ var toolbar=ToolBar {
             } catch (any) {
             System.out.println(any);
         }
-}
+    }
+    icon: Image { url: XMLTools.getResourceUrlStr("/icons/system-software-update.png") }
 }
 
 , Button {
     text: "analyze Datasource"
     toolTipText: "show and research the tree of a datasource."
     action: function() {
-        var configFrame=ConfigFrame {
-            visible: true
-        };
-        configFrame.pack();
+        var configFrame=ConfigFrame {};
+        configFrame.show();
+        configFrame=null;
         
     }
+    icon: Image { url: XMLTools.getResourceUrlStr("/icons/edit-find-replace.png") }
 }
 
 , Button {
@@ -160,10 +182,10 @@ var toolbar=ToolBar {
             title: "configure Settings"
             gnucashUtil: gcu
         };
-        settingsFrame.pack();
-        settingsFrame.readSettings();
-        settingsFrame.visible=true;
+        settingsFrame.show();
+        settingsFrame=null;
     }
+    icon: Image { url: XMLTools.getResourceUrlStr("/icons/preferences-system.png") }
 }
 
 ]
@@ -226,8 +248,9 @@ var apppanel=SplitPane {
 }
 , SplitView {
     content: StockReportTable {
-        tableSelectModel: bind tableselectmodel;
-        gnucashUtil: bind gcu;
+        tableSelectModel: bind tableselectmodel
+        gnucashUtil: bind gcu
+        selectedSymbol: bind selectedSymbol with inverse
     }
 }
 ]
@@ -246,4 +269,5 @@ var myframe=Frame {
 };
 
 myframe.pack();
+
 

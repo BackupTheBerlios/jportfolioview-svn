@@ -29,8 +29,7 @@ class TableCellClass extends TableCell {
     attribute SelectModel:TableSelectModelClass;
     override attribute selected on replace {
         if (selected==true) {
-        SelectModel.SelectedTableCell=this;
-        System.out.println(SelectModel.SelectedTableCell.text);
+            SelectModel.SelectedTableCell=this;
         }
     };
 }

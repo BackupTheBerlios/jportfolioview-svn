@@ -43,6 +43,9 @@ public abstract class AbstractDataSource extends Thread {
 
     @Override
     public void run() {
+        Settings.setProxy();
+        
+        //
         try {
             URI uri = new URI(uriStr);
             doc = TagSoupReader.getInstance().read(uri.toURL());

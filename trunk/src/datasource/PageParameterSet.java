@@ -36,6 +36,7 @@ public class PageParameterSet {
     DecimalFormat decimalFormat;
     
     String currencyXPath;
+    String alternateCurrencyXPath;
     String currencyPattern;
     
     String valutaXPath;
