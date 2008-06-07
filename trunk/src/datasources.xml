@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE pages [
+	<!ELEMENT pages (page+)>
+	
+	<!ELEMENT page (trigger)+>
+	<!ATTLIST page
+		name		ID		#REQUIRED
+		url 		CDATA 	#REQUIRED
+		urlsuffix 	CDATA 	""
+		mode		(ISIN|SYMBOL) "ISIN"
+		decimalpattern  CDATA   "#,#00.0#"
+		datetimepattern CDATA   "yyyy-MM-dd HH:mm:ss Z"
+		>
+	
+	<!ELEMENT trigger (#PCDATA)>
+	<!ATTLIST trigger
+		name		ID		#REQUIRED
+		xpath		CDATA	#REQUIRED
+		regex		CDATA	""
+		>
+]>
+
+<!-- http://isht.comdirect.de/html/detail/main.html?sPageType=extended&amp;sTab=overview&amp;sWpType=UKN&amp;sIsin= -->
+<!-- http://isht.comdirect.de/html/detail/main.html?sWpType=UKN&amp;sWkn= -->
+<!-- http://isht.comdirect.de/html/detail/main.html?sSym= -->
+<!-- http://isht.comdirect.de/html/detail/main.html?sIsin=XS0268043709 http://isht.comdirect.de/html/detail/main.html?sIsin=DE0007037129-->
+<pages>
+	<page name="Comdirect" url="http://isht.comdirect.de/html/detail/main.html?sIsin=" datetimepattern="dd.MM.yy">
+		<trigger  name="price"  xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']"  regex="(\d*,\d*)\w*"/>
+		<trigger  name="currency" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']" regex="(\D{3}$)"/>
+		<trigger  name="valuta" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][1]" regex="(\d\d\.\d\d.\d\d)"/>
+		<trigger name="name" xpath="/*[name()='html']/*[name()='body']/*[name()='h1']/*[name()='span']" />
+		<trigger name="isin" xpath="//*[name()='p' and text()='ISIN']/following-sibling::*" />
+		<trigger name="wkn" xpath="//*[name()='p' and text()='WKN']/following-sibling::*"  />
+		<trigger name="symbol" xpath="//*[name()='p' and text()='Symbol']/following-sibling::*"  />
+		
+		<!-- works with stocks only -->
+		<trigger name="type" xpath="//*[name()='p' and text()='Wertpapiertyp']/following-sibling::*" />
+		<trigger name="sector" xpath="//*[name()='p' and text()='Branche']/following-sibling::*" />
+	</page>
+	<page name="Comdirect" mode="SYMBOL" url="http://isht.comdirect.de/html/detail/main.html?sSym=" datetimepattern="dd.MM.yy">
+		<trigger  name="price"  xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']"  regex="(\d*,\d*)\w*"/>
+		<trigger  name="currency" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']" regex="(\D{3}$)"/>
+                <trigger  name="currencyA" xpath="//*[name()='p' and text()='Emittent']/following-sibling::*[3]" />
+"/>
+		<trigger  name="valuta" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][1]" regex="(\d\d\.\d\d.\d\d)"/>
+		<trigger name="name" xpath="/*[name()='html']/*[name()='body']/*[name()='h1']/*[name()='span']" />
+		<trigger name="isin" xpath="//*[name()='p' and text()='ISIN']/following-sibling::*" />
+		<trigger name="wkn" xpath="//*[name()='p' and text()='WKN']/following-sibling::*"  />
+		<trigger name="symbol" xpath="//*[name()='p' and text()='Symbol']/following-sibling::*"  />
+		
+		<!-- works with stocks only -->
+		<trigger name="type" xpath="//*[name()='p' and text()='Wertpapiertyp']/following-sibling::*" />
+		<trigger name="sector" xpath="//*[name()='p' and text()='Branche']/following-sibling::*" />
+	</page>
+</pages>
+
+
