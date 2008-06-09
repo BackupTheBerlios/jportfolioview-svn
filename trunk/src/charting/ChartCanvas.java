@@ -1,0 +1,261 @@
+package charting;
+
+import java.awt.Dimension;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+
+
+import java.net.URL;
+import javax.swing.JPanel;
+import javax.imageio.ImageIO;
+
+
+/**
+ *  Description of the Class
+ *
+ * @author    root
+ */
+public class ChartCanvas extends JPanel implements ActionListener, MouseListener, MouseMotionListener {
+    private BufferedImage bimg;
+    private int crossx = 0;
+    private int crossy = 0;
+    
+    private int backgroundcolor=-1;
+    private int snapcolor=-1;
+    
+    private int y1=0;
+    private int y2=0;
+    
+    private final long SNAPMODE=1;
+    private long mode=1;
+    
+    
+    
+    private String urlstr="http://isht.comdirect.de/charts/large.chart?hist=1d&type=candle&asc=lin&dsc=abs&avg1=38&avg2=90&avg3=200&avgtype=simple&ind0=MACD&ind1=SRS&ind2=AROON&&pd=bc41e00ba1ad0d6ba611a8566eaa9fce67f6511d3d9696b0&currency=&lSyms=";
+    private final String urlstr1="http://isht.comdirect.de/charts/large.chart?hist=1d&type=CONNECTLINE&asc=lin&dsc=abs&avg1=38&avg2=90&avg3=200&avgtype=simple&&pd=bc41e00ba1ad0d6ba611a8566eaa9fce11f50e7c9d480e54&currency=&lSyms=";
+    private String symbol="DAX.ETR";
+    
+    
+    /**  Constructor for the ChartCanvas object */
+    ChartCanvas() {
+        addMouseListener(this);
+        addMouseMotionListener(this);
+        loadChart();
+    }
+    
+    ChartCanvas(String symbol) {
+        addMouseListener(this);
+        addMouseMotionListener(this);
+	
+	this.symbol=symbol;
+	
+        loadChart();
+    }
+    
+    private void loadChart() {
+        try {
+            URL url = new URL(urlstr + symbol);
+            bimg = ImageIO.read(url);
+            
+            this.setPreferredSize(new Dimension(bimg.getWidth(), bimg.getHeight()));
+            this.validate();
+        } catch (Exception x) {
+            System.out.println(x.getMessage());
+        }
+        repaint();
+    }
+    
+    public void setSymbol(String symbol) {
+        this.symbol=symbol;
+        loadChart();
+    }
+    
+    public void setChart(String urlstr) {
+        this.urlstr =urlstr;
+        loadChart();
+    }
+    
+    /**
+     *  Description of the Method
+     *
+     * @param  graphics  Description of Parameter
+     */
+    public void paint(Graphics graphics) {
+        Graphics2D g2 = (Graphics2D)graphics;
+        //g2.scale(zoomfactor, zoomfactor);
+        
+        if (bimg!=null)  g2.drawImage(bimg, 0, 0, this);
+        
+        //g2.setRenderingHint(RenderingHints.)
+        //g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP,0.5f));
+        paintCrossHair(g2);
+    }
+    
+    
+    /**
+     *  Description of the Method
+     *
+     * @param  graphics  Description of Parameter
+     */
+    public void update(Graphics graphics) {
+        paint(graphics);
+    }
+    
+    //----------------------------------------------------------------
+    // ActionEventListener
+    
+    public void actionPerformed(ActionEvent e) {
+        loadChart();
+    }
+    
+    //------- MouseMotionListener
+    /**
+     *  Description of the Method
+     *
+     * @param  e  Description of Parameter
+     */
+    public void mouseDragged(MouseEvent e) { }
+    
+    
+    /**
+     *  Description of the Method
+     *
+     * @param  e  Description of Parameter
+     */
+    public void mouseMoved(MouseEvent e) {
+        crossx = e.getX();
+        
+        if (snapcolor!=backgroundcolor) {
+            setOnSnapColor(snapcolor);
+        } else {
+            crossy = e.getY();
+        }
+        repaint();
+    }
+    
+    //----------------------------------------------------------------
+    // MouseListener
+    
+    public void 	mouseClicked(MouseEvent e) {
+        if (e.getButton()==e.BUTTON1) {
+            if (mode==SNAPMODE) {
+                snapcolor=findSnapColor();
+                mode=0;
+            }
+        } else {
+            if (y1==0) {
+                y1=e.getY();
+            } else if (y2==0) {
+                y2=e.getY();
+            }
+        }
+    }
+    
+    public void 	mouseEntered(MouseEvent e) {
+    }
+    
+    public void 	mouseExited(MouseEvent e) {
+    }
+    
+    public void 	mousePressed(MouseEvent e) {
+    }
+    
+    public void 	mouseReleased(MouseEvent e) {
+    }
+    
+    /**
+     *  Description of the Method
+     *
+     * @param  g2  Description of Parameter
+     */
+    private void paintCrossHair(Graphics2D g2) {
+        g2.drawLine(Math.min(crossx,bimg.getWidth()), 0, Math.min(crossx,bimg.getWidth()), this.getHeight());
+        g2.drawLine(0, Math.min(crossy,bimg.getHeight()), bimg.getWidth(), Math.min(crossy,bimg.getHeight()));
+          /*
+          String s="color " + snapcolor;
+          g2.drawString(s,10,10);
+           
+          if (y1!=0 && y2!=0) {
+                  s="value: " + (162.5+(crossy-y2)*(162.5-87.5)/(y2-y1));
+                  g2.drawString(s,10,60);
+          }
+           */
+    }
+    
+    private int findSnapColor() {
+        int result=0;
+        int color=backgroundcolor;
+        float saturation=0;
+        float value=1;
+        
+        Color tcolor;
+        float[] hsv;
+        
+        // look inside a 5 pixel square
+        // for the strongest color with the highest saturation
+        // and the lowest value
+        
+        int maxh=Math.min(crossy+5,bimg.getHeight());
+        int maxw=Math.min(crossx+5,bimg.getWidth());
+        
+        for (int r=Math.max(crossy-5,0); r<maxh; r++) {
+            for (int c=Math.max(crossx-5,0); c<maxw; c++) {
+                color=bimg.getRGB(c,r);
+                
+                tcolor=new Color(color);
+                hsv =Color.RGBtoHSB(tcolor.getRed(), tcolor.getGreen(), tcolor.getBlue(),null);
+                
+                if ((hsv[1]>saturation || hsv[2]<value) && color!=backgroundcolor) {
+                    saturation=hsv[1];
+                    value=hsv[2];
+                    result=color;
+                }
+            }
+        }
+        return result;
+    }
+    
+    private void setOnSnapColor(int snapcolor) {
+        boolean b=false;
+        
+        int maxh=Math.min(bimg.getHeight(), this.getHeight());
+        int maxw=Math.min(bimg.getWidth(), this.getWidth());
+        
+        if (crossx< maxw) {
+            for (int r=0; (crossy-r > 0 || crossy+r < maxh) &! b; r++) {
+                if (crossy-r>0) {
+                    if (isEqualColor(bimg.getRGB(crossx,crossy-r),snapcolor)) {
+                        crossy-=r;
+                        b=true;
+                    }
+                }
+                
+                if (crossy+r<maxh &! b) {
+                    if (isEqualColor(bimg.getRGB(crossx,crossy+r),snapcolor)) {
+                        crossy+=r;
+                        b=true;
+                    }
+                }
+            }
+        }
+    }
+    
+    private boolean isEqualColor(int color1, int color2) {
+        Color c1=new Color(color1);
+        Color c2=new Color(color2);
+        
+        float[] values1=Color.RGBtoHSB(c1.getRed(),c1.getGreen(),c1.getBlue(),null);
+        float[] values2=Color.RGBtoHSB(c2.getRed(),c2.getGreen(),c2.getBlue(),null);
+        
+        return  Math.abs((values1[0]-values2[0]))<0.02 && Math.abs((values1[2]-values2[2]))<0.02;
+        
+        
+    }
+}
