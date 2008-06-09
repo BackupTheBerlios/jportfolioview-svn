@@ -2,7 +2,7 @@
 <!DOCTYPE pages [
 	<!ELEMENT pages (page+)>
 	
-	<!ELEMENT page (trigger)+>
+	<!ELEMENT page (trigger+,charts?)>
 	<!ATTLIST page
 		name		ID		#REQUIRED
 		url 		CDATA 	#REQUIRED
@@ -14,10 +14,20 @@
 	
 	<!ELEMENT trigger (#PCDATA)>
 	<!ATTLIST trigger
-		name		ID		#REQUIRED
+		name		CDATA   #REQUIRED
 		xpath		CDATA	#REQUIRED
 		regex		CDATA	""
 		>
+        
+        <!ELEMENT charts (chart+)>
+        <!ELEMENT chart (#PCDATA)>
+	<!ATTLIST chart
+                name            ID      #REQUIRED
+		description     CDATA   ""
+		url		CDATA	#REQUIRED
+		suffix		CDATA	""
+		>
+        
 ]>
 
 <!-- http://isht.comdirect.de/html/detail/main.html?sPageType=extended&amp;sTab=overview&amp;sWpType=UKN&amp;sIsin= -->
@@ -25,7 +35,7 @@
 <!-- http://isht.comdirect.de/html/detail/main.html?sSym= -->
 <!-- http://isht.comdirect.de/html/detail/main.html?sIsin=XS0268043709 http://isht.comdirect.de/html/detail/main.html?sIsin=DE0007037129-->
 <pages>
-	<page name="Comdirect" url="http://isht.comdirect.de/html/detail/main.html?sIsin=" datetimepattern="dd.MM.yy">
+	<page name="Comdirect1" url="http://isht.comdirect.de/html/detail/main.html?sIsin=" datetimepattern="dd.MM.yy">
 		<trigger  name="price"  xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']"  regex="(\d*,\d*)\w*"/>
 		<trigger  name="currency" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']" regex="(\D{3}$)"/>
 		<trigger  name="valuta" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][1]" regex="(\d\d\.\d\d.\d\d)"/>
@@ -38,6 +48,7 @@
 		<trigger name="type" xpath="//*[name()='p' and text()='Wertpapiertyp']/following-sibling::*" />
 		<trigger name="sector" xpath="//*[name()='p' and text()='Branche']/following-sibling::*" />
 	</page>
+        
 	<page name="Comdirect" mode="SYMBOL" url="http://isht.comdirect.de/html/detail/main.html?sSym=" datetimepattern="dd.MM.yy">
 		<trigger  name="price"  xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']"  regex="(\d*,\d*)\w*"/>
 		<trigger  name="currency" xpath="/*[name()='html']/*[name()='body']/*[name()='div'][1]/*[name()='div'][1]/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div']/*[name()='div'][1]/*[name()='p'][2]/*[name()='b']" regex="(\D{3}$)"/>
@@ -52,6 +63,13 @@
 		<!-- works with stocks only -->
 		<trigger name="type" xpath="//*[name()='p' and text()='Wertpapiertyp']/following-sibling::*" />
 		<trigger name="sector" xpath="//*[name()='p' and text()='Branche']/following-sibling::*" />
+                
+                <charts>
+                    <chart name="Intraday" description="Intraday" url="http://isht.comdirect.de/charts/large.chart?hist=1d&amp;type=candle&amp;asc=lin&amp;dsc=abs&amp;avg1=38&amp;avg2=90&amp;avg3=200&amp;avgtype=simple&amp;ind0=MACD&amp;ind1=SRS&amp;ind2=AROON&amp;currency=&amp;lSyms=" />
+                    <chart name="10days" description="10 days candlestick" url="http://isht.comdirect.de/charts/large.chart?hist=1d&amp;type=CONNECTLINE&amp;asc=lin&amp;dsc=abs&amp;avg1=38&amp;avg2=90&amp;avg3=200&amp;avgtype=simple&amp;ind0=MACD&amp;ind1=SRS&amp;ind2=AROON&amp;currency=&amp;lSyms=" />
+                    <chart name="3months" description="3 months candlestick" url="http://isht.comdirect.de/charts/large.chart?hist=3m&amp;type=CONNECTLINE&amp;asc=lin&amp;dsc=abs&amp;avg1=38&amp;avg2=90&amp;avg3=200&amp;avgtype=simple&amp;ind=ZIGZAG&amp;ind0=MACD&amp;ind1=SRS&amp;ind2=AROSC&amp;ind3=CMF&amp;currency=&amp;lSyms=" />
+                    <chart name="1year" description="1 year candlestick" url="http://isht.comdirect.de/charts/large.chart?hist=1y&amp;type=candle&amp;asc=lin&amp;dsc=abs&amp;avg1=38&amp;avg2=90&amp;avg3=200&amp;avgtype=simple&amp;ind=ZIGZAG&amp;ind0=MACD&amp;ind1=SRS&amp;ind2=AROSC&amp;ind3=CMF&amp;currency=&amp;lSyms=" />
+                </charts>
 	</page>
 </pages>
 

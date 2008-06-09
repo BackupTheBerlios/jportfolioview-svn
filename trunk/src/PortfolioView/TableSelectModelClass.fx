@@ -23,7 +23,10 @@ package PortfolioView;
  */
 import javafx.ui.*;
 import java.util.Vector;
+import charting.*;
 
 class TableSelectModelClass {
-    attribute SelectedTableCell:TableCell;
+    attribute SelectedTableCell:TableCell on replace {
+        ChartFrame.set(SelectedTableCell.text);
+    };
 }

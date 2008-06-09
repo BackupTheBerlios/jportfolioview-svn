@@ -38,6 +38,9 @@ class StockReportTable extends Table {
     };
     attribute accounts:StockAccount[];
     
+    override attribute rowSelectionAllowed=true;
+    override attribute showVerticalLines=false;
+    
     override attribute columns=[
     TableColumn {
         text: "Asset"

@@ -43,7 +43,6 @@ public class Dispatcher extends Thread {
     Document config;
 
     public Dispatcher(Collection<Commodity> commodityCollection) throws SAXException, Exception {
-        //@TODO: read from ressource inside the jar
         config = Settings.getInstance().getDatasourceDocument();
         priceHashMap = new HashMap();
         commodityIterator = commodityCollection.iterator();
