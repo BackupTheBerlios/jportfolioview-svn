@@ -20,28 +20,28 @@ import java.util.Vector;
  * @author are
  */
 public abstract class AbstractFigure {
-    Vector<Point2D.Double> points=new Vector();
+    Vector<Point2D.Float> points=new Vector();
     Color color=Color.RED;
     Color selectcolor=Color.GREEN;
     
     static final int SNAP_DISTANCE=7;
-    static final double ELLIPSE_RADIUS=3d;
+    static final float ELLIPSE_RADIUS=3f;
     
     final public void paint(Graphics2D g2, boolean selected) {
 	if (selected) g2.setColor( selectcolor );
 	else g2.setColor( color );
 	
 	for (int i=0; i<points.size(); i++) {
-	    Point2D.Double p=points.get(i);
-	    Rectangle2D.Double e=new Rectangle2D.Double(p.getX()-ELLIPSE_RADIUS, p.getY()-ELLIPSE_RADIUS,2*ELLIPSE_RADIUS,2*ELLIPSE_RADIUS);
+	    Point2D.Float p=points.get(i);
+	    Rectangle2D.Float e=new Rectangle2D.Float(p.x -ELLIPSE_RADIUS, p.y -ELLIPSE_RADIUS,2*ELLIPSE_RADIUS,2*ELLIPSE_RADIUS);
 	    g2.draw(e);
 	}
 	paintFigure( g2 );
     };
     
-    final public void move(double x, double y) {
+    final public void move(float x, float y) {
 	for (int i=0; i<points.size(); i++) {
-	    Point2D.Double p=points.get(i);
+	    Point2D.Float p=points.get(i);
 	    p.x+=x;
 	    p.y+=y;
 	}
@@ -49,7 +49,7 @@ public abstract class AbstractFigure {
     
     abstract public void paintFigure(Graphics2D g2);
     
-    public Vector<Point2D.Double> getPoints() {
+    public Vector<Point2D.Float> getPoints() {
 	return points;
     }
     

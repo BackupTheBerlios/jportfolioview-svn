@@ -30,7 +30,7 @@ public class ChartCanvas extends JPanel implements ActionListener, MouseListener
     //Vector<Shape> shapelist = new Vector();
     private Vector<AbstractFigure> figurelist = new Vector();
     private AbstractFigure selectedfigure;
-    private Point2D.Double selectedpoint;
+    private Point2D.Float selectedpoint;
     
     
     private Shape selectedshape = null;
@@ -324,14 +324,14 @@ public class ChartCanvas extends JPanel implements ActionListener, MouseListener
     }
 
     public void getSnapPoint() {
-        double d = 0;
+        float d = 0f;
 
         for (int i = 0; i < figurelist.size(); i++) {
             AbstractFigure f = figurelist.get(i);
-            Vector<Point2D.Double> points = f.getPoints();
+            Vector<Point2D.Float> points = f.getPoints();
 
             for (int k = 0; k < points.size(); k++) {
-                double d1 = points.get(k).distance(getMousePosition());
+                float d1 = (float) points.get(k).distance(getMousePosition());
                 if ((i == 0 && k == 0) || d1 < d) {
                     d = d1;
                     selectedfigure = f;

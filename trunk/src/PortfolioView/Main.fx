@@ -30,6 +30,7 @@ import java.io.File;
 
 import GnuCash.*;
 import datasource.*;
+import charting.*;
 import java.util.Date;
 
 //@todo: implement this correctly as option
@@ -120,10 +121,13 @@ var toolbar=ToolBar {
         text: "view Chart"
         toolTipText: "View the Chart from online datasource."
         action: function() {
-            var chartFrame=ChartFrame {
-                symbol: tableselectmodel.SelectedTableCell.text
-                visible: true
-            };
+            //var chartFrame=ChartFrame {
+            //    symbol: tableselectmodel.SelectedTableCell.text
+            //    visible: true
+            //};
+            Settings.setProxy();
+            //var chartFrame=new charting.ChartFrame(tableselectmodel.SelectedTableCell.text);
+            ChartFrame.showIt();
         }
         icon: Image { url: XMLTools.getResourceUrlStr("/icons/go-next.png") }
     }
@@ -138,6 +142,7 @@ var toolbar=ToolBar {
         };
         assetFrame.show();
         assetFrame=null;
+        
     }
     icon: Image { url: XMLTools.getResourceUrlStr("/icons/add.png") }
 }

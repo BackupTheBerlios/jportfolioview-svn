@@ -42,8 +42,6 @@ class ChartControlPane extends JToolBar implements ActionListener, ListSelection
             b.addActionListener(this);
 
             add(b);
-            
-            chartcanvas.setChart(name);
         }
 
         addSeparator();
@@ -82,6 +80,8 @@ class ChartControlPane extends JToolBar implements ActionListener, ListSelection
         b.setActionCommand("drawFibonacci");
         b.addActionListener(this);
         add(b);
+        
+        chartcanvas.setChart(chartCommand.values().toArray()[0].toString());
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -98,14 +98,16 @@ class ChartControlPane extends JToolBar implements ActionListener, ListSelection
 
         } else if (command.equals("drawTrend")) {
             chartcanvas.setDrawingMode(ChartCanvas.DRAW_FIGURE);
-
-            Point2D.Double p = new Point2D.Double(chartcanvas.getBounds().getCenterX(), chartcanvas.getBounds().getCenterX());
+            
+            float x=(float) chartcanvas.getBounds().getCenterX();
+            Point2D.Float p = new Point2D.Float(x, x);
             chartcanvas.addFigure(new TrendFigure(p));
 
         } else if (command.equals("drawFibonacci")) {
             chartcanvas.setDrawingMode(ChartCanvas.DRAW_FIGURE);
 
-            Point2D.Double p = new Point2D.Double(chartcanvas.getBounds().getCenterX(), chartcanvas.getBounds().getCenterX());
+            float x=(float) chartcanvas.getBounds().getCenterX();
+            Point2D.Float p = new Point2D.Float(x, x);
             chartcanvas.addFigure(new FibonacciFigure(p));
 
         }else if (command.equals("snap")) {

@@ -60,7 +60,7 @@ class TransactionTableFrameClass extends Dialog {
                         //foreground: if (a.getIncome()<0) then fgColor1 else fgColor2
                     }
                     ];
-                    show();
+                    //show();
     }    
     
     override attribute title= bind SelectModel.SelectedTableCell.text;
